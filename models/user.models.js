@@ -3,19 +3,19 @@ const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      trim: true,
-      validate: {
-        validator: function (v) {
-          return /^[a-zA-Z]+([' -][a-zA-Z]+)*$/.test(v);
-        },
-        message: "Please enter a valid name",
+   name: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function (v) {
+        return /^[a-zA-Z]+([' -.]?[a-zA-Z]+)*$/.test(v);
       },
-      minlength: [3, 'Name should be at least 3 characters'],
-      maxlength: [50, 'Name should not exceed 50 characters'],
-      required: [true, "Name required"],
+      message: "Please enter a valid name",
     },
+    minlength: [3, 'Name should be at least 3 characters'],
+    maxlength: [50, 'Name should not exceed 50 characters'],
+    required: [true, "Name required"],
+  },
     email: {
       type: String,
       trim: true,
