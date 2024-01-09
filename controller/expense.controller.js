@@ -108,9 +108,69 @@ const getExpenseEntry = async (req, res) => {
   }
 };
 
+const getExpenseReport = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { month, year } = req.query;
+    const allExpenses = await expenditureModel.find({
+      user: userId
+    });
+
+    let basedOnMonthExpenses = [];
+    let lastSevenDaysExpenses = [];
+    let todayExpenses = [];if (month && year) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);basedOnMonthExpenses = allExpenses.filter(
+        (expense) =>
+          expense.date >= startDate && expense.date <= endDate
+      );
+    }
+    const endOfToday = new Date(); 
+    const startOfToday = new Date(endOfToday);
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfLastSevenDays = new Date(startOfToday);
+    startOfLastSevenDays.setDate(startOfLastSevenDays.getDate() - 7);
+    lastSevenDaysExpenses = allExpenses.filter(
+      (expense) => expense.date >= startOfLastSevenDays && expense.date <= endOfToday
+    );
+
+    todayExpenses = allExpenses.filter(
+      (expense) => expense.date.toDateString() === endOfToday.toDateString()
+    );
+
+    const calculateTotal = (expenses) => expenses.reduce((total, expense) => total + expense.amount, 0);
+
+    const expenseData = {
+      basedOnMonth: {
+        expenses: basedOnMonthExpenses,
+        total: calculateTotal(basedOnMonthExpenses),
+      },
+      lastSevenDays: {
+        expenses: lastSevenDaysExpenses,
+        total: calculateTotal(lastSevenDaysExpenses),
+      },
+      today: {
+        expenses: todayExpenses,
+        total: calculateTotal(todayExpenses),
+      },
+    };
+
+    console.log(expenseData);
+
+    res.status(200).json(expenseData);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   addExpenseEntry,
   updateExpenseEntry,
   deleteExpenseEntry,
-  getExpenseEntry
+  getExpenseEntry,
+  getExpenseReport
 };
+
