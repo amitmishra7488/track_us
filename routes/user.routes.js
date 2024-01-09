@@ -14,19 +14,21 @@ const {
   updatePortfolioEntry,
   deletePortfolioEntry,
   getPortfolioEntry,
+  getSinglePortfolioEntry,
 } = require("../controller/portfolio.controller");
 const {
   addExpenseEntry,
   deleteExpenseEntry,
   updateExpenseEntry,
   getExpenseEntry,
+  getExpenseReport,
 } = require("../controller/expense.controller");
 const router = express.Router();
 
 // User Credential request
 router.post("/register", register);
 router.post("/login", login);
-router.get('/users', getUser);
+router.get('/users',auth, getUser);
 router.post("/additionalDetails/:userId", additionalDetails);
 
 // User Goals request
@@ -41,11 +43,13 @@ router.post("/portfolio", auth, addPortfolioEntry);
 router.patch("/portfolio/:id", auth, updatePortfolioEntry);
 router.delete("/portfolio/:id", auth, deletePortfolioEntry);
 router.get("/portfolio", auth, getPortfolioEntry);
+router.get("/portfolio/:portfolioId", auth, getSinglePortfolioEntry);
 
 //User Expenditure request
 router.post("/expense", auth, addExpenseEntry);
 router.patch("/expense/:id", auth, updateExpenseEntry);
 router.delete("/expense/:id", auth, deleteExpenseEntry);
 router.get("/expense", auth, getExpenseEntry);
+router.get("/expenseReport", auth, getExpenseReport);
 
 module.exports = router;
