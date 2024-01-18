@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, getUser } = require("../controller/user.controller");
+const { register, login, getUser, generateOTP } = require("../controller/user.controller");
 const { additionalDetails } = require("../controller/userAdditionalDetails");
 const {
   addGoal,
@@ -26,6 +26,7 @@ const {
 const router = express.Router();
 
 // User Credential request
+router.post('/generate-otp', generateOTP);
 router.post("/register", register);
 router.post("/login", login);
 router.get('/users',auth, getUser);
@@ -51,5 +52,4 @@ router.patch("/expense/:id", auth, updateExpenseEntry);
 router.delete("/expense/:id", auth, deleteExpenseEntry);
 router.get("/expense", auth, getExpenseEntry);
 router.get("/expenseReport", auth, getExpenseReport);
-
 module.exports = router;
