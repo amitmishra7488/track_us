@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, getUser, generateOTP } = require("../controller/user.controller");
+const { register, login, getUser, generateOTP, generateForgotPasswordOTP, updatePassword, verifyOTP } = require("../controller/user.controller");
 const { additionalDetails } = require("../controller/userAdditionalDetails");
 const {
   addGoal,
@@ -29,6 +29,9 @@ const router = express.Router();
 router.post('/generate-otp', generateOTP);
 router.post("/register", register);
 router.post("/login", login);
+router.post("/generate-otp-password", generateForgotPasswordOTP);
+router.post("/verify-otp-password", verifyOTP);
+router.put("/reset-password", updatePassword);
 router.get('/users',auth, getUser);
 router.post("/additionalDetails/:userId", additionalDetails);
 
