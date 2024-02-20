@@ -1,3 +1,4 @@
+const { expenseReport, searchExpenditure } = require("../lib/calculateExpenses");
 const expenditureModel = require("../models/expenditure.models");
 
 const addExpenseEntry = async (req, res) => {
@@ -98,7 +99,7 @@ const getExpenseEntry = async (req, res) => {
     const expenses = await expenditureModel.find({ user: userId });
 
     if (!expenses) {
-      return res.status(404).json({ error: 'Goal not found' });
+      return res.status(404).json({ error: 'Expenses not found' });
     }
 
     res.status(200).json({ expense: expenses});
@@ -112,46 +113,24 @@ const getExpenseReport = async (req, res) => {
   try {
     const userId = req.userId;
     const { month, year } = req.query;
-    const allExpenses = await expenditureModel.find({
-      user: userId
-    });
-
     let basedOnMonthExpenses = [];
-    let lastSevenDaysExpenses = [];
-    let todayExpenses = [];if (month && year) {
+    if (month && year) {
       const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0);basedOnMonthExpenses = allExpenses.filter(
-        (expense) =>
-          expense.date >= startDate && expense.date <= endDate
-      );
+      const endDate = new Date(year, month, 0);
+      const result =  await expenseReport(startDate,endDate,userId);
+      basedOnMonthExpenses = result;
     }
-    const endOfToday = new Date(); 
-    const startOfToday = new Date(endOfToday);
-    startOfToday.setHours(0, 0, 0, 0);
-    const startOfLastSevenDays = new Date(startOfToday);
-    startOfLastSevenDays.setDate(startOfLastSevenDays.getDate() - 7);
-    lastSevenDaysExpenses = allExpenses.filter(
-      (expense) => expense.date >= startOfLastSevenDays && expense.date <= endOfToday
-    );
-
-    todayExpenses = allExpenses.filter(
-      (expense) => expense.date.toDateString() === endOfToday.toDateString()
-    );
-
-    const calculateTotal = (expenses) => expenses.reduce((total, expense) => total + expense.amount, 0);
 
     const expenseData = {
       basedOnMonth: {
-        expenses: basedOnMonthExpenses,
-        total: calculateTotal(basedOnMonthExpenses),
+        expenses: basedOnMonthExpenses.groupedDocuments[0].documents,
+        total: basedOnMonthExpenses?.requiredMonth[0]?.totalValue || 0,
       },
       lastSevenDays: {
-        expenses: lastSevenDaysExpenses,
-        total: calculateTotal(lastSevenDaysExpenses),
+        total: basedOnMonthExpenses.lastSevenDays[0]?.totalValueSevenDays || 0,
       },
       today: {
-        expenses: todayExpenses,
-        total: calculateTotal(todayExpenses),
+        total: basedOnMonthExpenses.today[0]?.totalValueToday || 0,
       },
     };
 
@@ -165,12 +144,33 @@ const getExpenseReport = async (req, res) => {
   }
 };
 
+// Backend controller for handling search requests
+const searchExpenditureReports = async (req, res) => {
+  try {
+      const { month, year, searchQuery } = req.query;
+      const userId = req.userId;
+      let searchData 
+      if (month && year) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        searchData =  await searchExpenditure(startDate,endDate,userId,searchQuery);
+      }
+
+      // Send search results back to the client
+      res.status(200).json(searchData);
+
+  } catch (error) {
+      console.error("Error occurred during search:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 module.exports = {
   addExpenseEntry,
   updateExpenseEntry,
   deleteExpenseEntry,
   getExpenseEntry,
-  getExpenseReport
+  getExpenseReport,
+  searchExpenditureReports
 };
-
